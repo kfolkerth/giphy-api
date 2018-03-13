@@ -4,18 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>GIPHY API</title>
+    <title>GIPHY Countries</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
 
+    <div class="container">
+        <div class="row">
+            <div class="col-12" id="buttonCol">
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6" id="countryDiv">
+
+            </div>
+
+            <div class="col-6">
+                <form id="countryForm">
+                    <label for="countryInput">Add a Country</label>
+                    <br>
+                    <input type="text" id="countryInput">
+                    <br>
+                    <input id="addCountry" class="btn btn-info mt-2" type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    </div>
 
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script>
 
-</script>]
+<script type="text/javascript">
+
+    //array containing initial country list
+    var countryArray = ["France", "Japan", "Germany", "Malaysia", "United States", "Mexico", "China", "Russia", "South Korea", "Egypt", "Algeria", "New Zealand", "Ireland", 
+                        "United Kingdom", "Mongolia", "Bolivia", "Argentina", "Ghana"];
+
+    //takes contents of countryArray and renders a button for each one
+    function createButtons() {
+        $("#buttonCol").empty();
+
+        for (i = 0; i < countryArray.length; i++) {
+            var button = $("<button>");
+            button.addClass("btn btn-info m-2 countryBtn");
+            button.attr("data-country", countryArray[i]);
+            button.text(countryArray[i]);
+            $("#buttonCol").append(button);
+        }
+    }
+
+    //gets the country button clicked on from the data-country attribute, submits a request to the GIPHY API and renders 10 gifs for that country in a still format by default
+    function countryGif() {
+
+        $("#countryDiv").empty();
+
+        var countryName = $(this).attr("data-country");
+        var requestURL = "http://api.giphy.com/v1/gifs/search?q=" + countryName + "&api_key=x6lDOgv1Te0B71EXlINpvvnx0IY07QHC&limit=10";
+        
+        $.ajax({
+            url : requestURL,
+            method : "GET"
+        }).then(function(response){
+
+            for (i = 0; i < response.data.length; i++) {
+
+                var gifDiv = $("<div>");
+                var gifRating = response.data[i].rating;
+                var stillURL = response.data[i].images.fixed_height_still.url;
+                var playingURL = response.data[i].images.fixed_height.url;
+                var ratingHeader = $("<h3>");
+                ratingHeader.text("rating: " + gifRating);
+
+                gifDiv.append(ratingHeader);
+
+                var gifImage = $("<img>");
+                gifImage.attr("data-stillURL", stillURL);
+                gifImage.attr("data-playingURL", playingURL);
+                gifImage.attr("data-playing", "false");
+                gifImage.attr("src", stillURL);
+                gifImage.addClass("gif-image");
+
+                gifDiv.append(gifImage);
+
+                $("#countryDiv").append(gifDiv);
+            }
+        });
+        
+    }
+
+    //called when a gif is clicked, checks if gif is currently playing then toggles status attribute and updates gif source as necessary
+    function updateGifState() {
+        var currentlyPlaying = $(this).attr("data-playing");
+
+        if (currentlyPlaying === "true") {
+            $(this).attr("data-playing", "false");
+            var nextSource = $(this).attr("data-stillURL");
+            $(this).attr("src", nextSource);
+        } else {
+            $(this).attr("data-playing", "true");
+            var nextSource = $(this).attr("data-playingURL");
+            $(this).attr("src", nextSource);
+        }
+    }
+
+    //grabs the name of the country to be added and calls the function to re-render the button with the updated countryArray
+    $("#addCountry").on("click", function(event) {
+        event.preventDefault();
+
+        var newCountry = $("#countryInput").val().trim();
+        countryArray.push(newCountry);
+        createButtons();
+    });
+
+    $(document).on("click", ".countryBtn", countryGif);
+
+    $(document).on("click", ".gif-image", updateGifState);
+
+
+    createButtons();
+</script>
 </body>
 </html>
