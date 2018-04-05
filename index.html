@@ -63,7 +63,7 @@
         $("#countryDiv").empty();
 
         var countryName = $(this).attr("data-country");
-        var requestURL = "http://api.giphy.com/v1/gifs/search?q=" + countryName + "&api_key=x6lDOgv1Te0B71EXlINpvvnx0IY07QHC&limit=10";
+        var requestURL = "https://api.giphy.com/v1/gifs/search?q=" + countryName + "&api_key=x6lDOgv1Te0B71EXlINpvvnx0IY07QHC&limit=10";
         
         $.ajax({
             url : requestURL,
